@@ -1,0 +1,746 @@
+{
+	"info": {
+		"_postman_id": "b2c3d4e5-f6a7-8901-bcde-f23456789012",
+		"name": "Pravzo Landing CMS & Public Flow",
+		"description": "Postman Collection for Pravzo Backend - Landing CMS (Admin Management) & Public Content/Enquiries Flow.\n\nFlow covered:\n1. Public Landing Page APIs (Hero, Statistics, Partners, Contact, Footer, Submit Enquiry)\n2. Admin Landing CMS Management (Hero, Statistics, Partners CRUD, Contact, Footer)\n3. Admin Enquiry Management (View Enquiries, Enquiry Stats, Update Enquiry Status, Assign Enquiry)",
+		"schema": "https://getpostman.com/schemas/v1.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Public Landing Page APIs",
+			"item": [
+				{
+					"name": "Get Public Hero Section",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/public/landing/hero",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"public",
+								"landing",
+								"hero"
+							]
+						},
+						"description": "Public endpoint to get landing page Hero banner details."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Public Statistics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/public/landing/statistics",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"public",
+								"landing",
+								"statistics"
+							]
+						},
+						"description": "Public endpoint to get landing page metrics and statistics."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Public Partners",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/public/landing/partners",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"public",
+								"landing",
+								"partners"
+							]
+						},
+						"description": "Public endpoint to get partner logos/list for landing page."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Public Contact Info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/public/landing/contact",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"public",
+								"landing",
+								"contact"
+							]
+						},
+						"description": "Public endpoint to get contact support details."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Public Footer Info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/public/landing/footer",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"public",
+								"landing",
+								"footer"
+							]
+						},
+						"description": "Public endpoint to get footer links and social media accounts."
+					},
+					"response": []
+				},
+				{
+					"name": "Submit Contact Enquiry",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.success && jsonData.data && jsonData.data.enquiry_id) {",
+									"    pm.environment.set(\"enquiry_id\", jsonData.data.enquiry_id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"johndoe@example.com\",\n  \"phone\": \"9876543210\",\n  \"subject\": \"EV Fleet Partnership\",\n  \"message\": \"We want to integrate 50 EV bikes for delivery services in Delhi.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/public/landing/enquiries",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"public",
+								"landing",
+								"enquiries"
+							]
+						},
+						"description": "Public endpoint to submit a contact form enquiry."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Admin Hero & Statistics Management",
+			"item": [
+				{
+					"name": "Get Admin Hero",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/landing/hero",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"landing",
+								"hero"
+							]
+						},
+						"description": "Get Hero section configuration for Admin."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Admin Hero",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Electric Mobility Simplified\",\n  \"subtitle\": \"Rent eco-friendly electric vehicles with flexible subscription plans.\",\n  \"cta_text\": \"Explore Fleet\",\n  \"cta_link\": \"/vehicles\",\n  \"image_url\": \"https://pravzo.com/assets/hero-banner.png\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/landing/hero",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"landing",
+								"hero"
+							]
+						},
+						"description": "Update Hero section configuration."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Admin Statistics",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/landing/statistics",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"landing",
+								"statistics"
+							]
+						},
+						"description": "Get current landing page statistics."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Admin Statistics",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"total_rides\": 50000,\n  \"happy_customers\": 12000,\n  \"co2_saved_kg\": 75000,\n  \"active_vehicles\": 1500\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/landing/statistics",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"landing",
+								"statistics"
+							]
+						},
+						"description": "Update landing page statistics counters."
+					},
+					"response": []
+				},
+				{
+					"name": "Sync Admin Statistics",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/landing/statistics/sync",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"landing",
+								"statistics",
+								"sync"
+							]
+						},
+						"description": "Auto sync statistics with live system database numbers."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Admin Partners Management",
+			"item": [
+				{
+					"name": "Get Partners List",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/landing/partners",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"landing",
+								"partners"
+							]
+						},
+						"description": "Get list of partners."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Partner",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.success && jsonData.data && jsonData.data.partner_id) {",
+									"    pm.environment.set(\"partner_id\", jsonData.data.partner_id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Zomato\",\n  \"logo_url\": \"https://pravzo.com/assets/partners/zomato.png\",\n  \"website_url\": \"https://zomato.com\",\n  \"display_order\": 1,\n  \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/landing/partners",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"landing",
+								"partners"
+							]
+						},
+						"description": "Add new partner to landing page."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Partner By ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/landing/partners/{{partner_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"landing",
+								"partners",
+								"{{partner_id}}"
+							]
+						},
+						"description": "Get partner details by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Partner",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Zomato Delivery\",\n  \"display_order\": 2,\n  \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/landing/partners/{{partner_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"landing",
+								"partners",
+								"{{partner_id}}"
+							]
+						},
+						"description": "Update partner info by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Partner",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/landing/partners/{{partner_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"landing",
+								"partners",
+								"{{partner_id}}"
+							]
+						},
+						"description": "Remove partner by ID."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. Admin Enquiry Management",
+			"item": [
+				{
+					"name": "Get Enquiries List",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/landing/enquiries?page=1&limit=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"landing",
+								"enquiries"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Get all submitted contact enquiries."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Enquiry Statistics",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/landing/enquiries/statistics",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"landing",
+								"enquiries",
+								"statistics"
+							]
+						},
+						"description": "Get enquiry status metrics (NEW, IN_PROGRESS, RESOLVED, CLOSED)."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Enquiry By ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/landing/enquiries/{{enquiry_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"landing",
+								"enquiries",
+								"{{enquiry_id}}"
+							]
+						},
+						"description": "Get enquiry details by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Enquiry Status",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"IN_PROGRESS\",\n  \"remarks\": \"Assigned sales team to contact client.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/landing/enquiries/{{enquiry_id}}/status",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"landing",
+								"enquiries",
+								"{{enquiry_id}}",
+								"status"
+							]
+						},
+						"description": "Update status of an enquiry."
+					},
+					"response": []
+				},
+				{
+					"name": "Assign Enquiry",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"assigned_to\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/landing/enquiries/{{enquiry_id}}/assign",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"landing",
+								"enquiries",
+								"{{enquiry_id}}",
+								"assign"
+							]
+						},
+						"description": "Assign enquiry to a specific admin user."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		}
+	]
+}

@@ -1,0 +1,237 @@
+{
+	"info": {
+		"_postman_id": "b8901234-5678-9012-3456-789012345678",
+		"name": "Pravzo Support, SOS Emergency & BI Analytics Flow",
+		"description": "Postman Collection for Pravzo Backend - Rider Breakdown Support, SOS Emergency Triggers, Admin Alert Resolution & Business Intelligence (BI) Analytics.\n\nFlow covered:\n1. User Submit Vehicle Breakdown Report (`POST /api/breakdown-reports`)\n2. User Trigger SOS Emergency Alert (`POST /api/sos/alert`)\n3. Admin Resolve SOS Emergency Alert (`PUT /api/sos/:id/resolve`)\n4. Super Admin BI Dashboard & Analytics (`/api/super-admin/dashboard`, `/analytics`, `/reports`)",
+		"schema": "https://getpostman.com/schemas/v1.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. User Support & Emergency SOS",
+			"item": [
+				{
+					"name": "Report Vehicle Breakdown (User)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{user_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"vehicle_id\": 1,\n  \"issue_type\": \"FLAT_TYRE\",\n  \"description\": \"Front tyre punctured near Rajiv Chowk Metro Gate 3\",\n  \"latitude\": 28.6328,\n  \"longitude\": 77.2197\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/breakdown-reports",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"breakdown-reports"
+							]
+						},
+						"description": "User or Rider submits breakdown report for assistance."
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Breakdown Reports",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{user_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/breakdown-reports/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"breakdown-reports",
+								"me"
+							]
+						},
+						"description": "Get status of breakdown reports submitted by user."
+					},
+					"response": []
+				},
+				{
+					"name": "Trigger Emergency SOS Alert",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{user_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"latitude\": 28.6328,\n  \"longitude\": 77.2197,\n  \"message\": \"Immediate assistance needed! Vehicle accident.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/sos/alert",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"sos",
+								"alert"
+							]
+						},
+						"description": "Triggers high-priority panic/SOS alert."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Admin Emergency Resolution & BI Analytics",
+			"item": [
+				{
+					"name": "Admin Resolve SOS Emergency Alert",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"resolution_notes\": \"Dispatched roadside assistance vehicle. Rider safe.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/sos/1/resolve",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"sos",
+								"1",
+								"resolve"
+							]
+						},
+						"description": "Admin resolves active SOS alert."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Super Admin BI Dashboard Overview",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/super-admin/dashboard",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"super-admin",
+								"dashboard"
+							]
+						},
+						"description": "Get enterprise high-level executive dashboard metrics."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Business Intelligence Analytics",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/super-admin/analytics",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"super-admin",
+								"analytics"
+							]
+						},
+						"description": "Get deep analytics report for Pravzo platform operations."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		}
+	]
+}

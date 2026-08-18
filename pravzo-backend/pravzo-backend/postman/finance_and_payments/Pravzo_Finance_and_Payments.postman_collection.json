@@ -1,0 +1,444 @@
+{
+	"info": {
+		"_postman_id": "f6a7b890-1234-5678-9012-345678901234",
+		"name": "Pravzo Finance, Payments & Wallet Flow",
+		"description": "Postman Collection for Pravzo Backend - User Wallet Operations, Razorpay Payments Gateway & Super Admin Enterprise Finance, Ledger & Settlements.\n\nFlow covered:\n1. User Wallet Topup & Razorpay Integration (`/api/wallet/topup-order`, `/api/wallet/verify-topup`)\n2. Rider Cashout / Instant Payout (`/api/wallet/cashout`)\n3. User Wallet Balance & Transactions (`/api/wallet/:userId`, `/api/wallet/transactions/:userId`)\n4. Super Admin Wallet Credit/Debit Operations (`/api/super-admin/wallets/:id/credit`, `debit`)\n5. Super Admin Settlements (`/api/super-admin/settlements/run`, `process`, `complete`)\n6. Super Admin Financial Accounting Ledger & Trial Balance (`/api/super-admin/ledger/trial-balance`, `accounts`, `entries`)",
+		"schema": "https://getpostman.com/schemas/v1.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. User Wallet Topup & Payments (Razorpay)",
+			"item": [
+				{
+					"name": "Create Wallet Topup Order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.success && jsonData.data && jsonData.data.order_id) {",
+									"    pm.environment.set(\"razorpay_order_id\", jsonData.data.order_id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{user_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": 1000.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/wallet/topup-order",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"wallet",
+								"topup-order"
+							]
+						},
+						"description": "User initiates wallet recharge order with Razorpay."
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Wallet Topup Payment",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{user_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"razorpay_order_id\": \"{{razorpay_order_id}}\",\n  \"razorpay_payment_id\": \"pay_test12345678\",\n  \"razorpay_signature\": \"test_signature_hash\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/wallet/verify-topup",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"wallet",
+								"verify-topup"
+							]
+						},
+						"description": "Verifies payment signature and credits funds to user wallet."
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Wallet Balance",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{user_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/wallet/{{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"wallet",
+								"{{user_id}}"
+							]
+						},
+						"description": "Fetch current wallet balance and status."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Wallet Transactions History",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{user_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/wallet/transactions/{{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"wallet",
+								"transactions",
+								"{{user_id}}"
+							]
+						},
+						"description": "Fetch passbook of wallet credits and debits."
+					},
+					"response": []
+				},
+				{
+					"name": "Rider Instant Cashout / Withdrawal",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{user_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": 500.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/wallet/cashout",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"wallet",
+								"cashout"
+							]
+						},
+						"description": "Rider requests instant cashout transfer to registered bank account."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Super Admin Wallet & Ledger Management",
+			"item": [
+				{
+					"name": "Get All Wallets List",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/super-admin/wallets",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"super-admin",
+								"wallets"
+							]
+						},
+						"description": "Super Admin view of system wallets."
+					},
+					"response": []
+				},
+				{
+					"name": "Credit User Wallet (Super Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": 250.00,\n  \"reason\": \"Bonus credit for completing 50 rides\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/super-admin/wallets/1/credit",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"super-admin",
+								"wallets",
+								"1",
+								"credit"
+							]
+						},
+						"description": "Manually credit money to user wallet."
+					},
+					"response": []
+				},
+				{
+					"name": "Debit User Wallet (Super Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": 100.00,\n  \"reason\": \"Penalty charge for late vehicle return\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/super-admin/wallets/1/debit",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"super-admin",
+								"wallets",
+								"1",
+								"debit"
+							]
+						},
+						"description": "Manually deduct money from user wallet."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Super Admin Settlements & Accounting",
+			"item": [
+				{
+					"name": "Trigger Settlement Calculation",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"settlement_date\": \"2026-08-14\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/super-admin/settlements/run",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"super-admin",
+								"settlements",
+								"run"
+							]
+						},
+						"description": "Run batch calculation for branch and rider daily settlements."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Trial Balance",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/super-admin/ledger/trial-balance",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"super-admin",
+								"ledger",
+								"trial-balance"
+							]
+						},
+						"description": "Get accounting double-entry trial balance."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Accounting Journal Entries",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/super-admin/ledger/entries",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"super-admin",
+								"ledger",
+								"entries"
+							]
+						},
+						"description": "Get general ledger transaction rows."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		}
+	]
+}

@@ -1,0 +1,654 @@
+{
+	"info": {
+		"_postman_id": "e5f6a7b8-9012-3456-ef67-890123456789",
+		"name": "Pravzo Bookings & Rentals Flow",
+		"description": "Postman Collection for Pravzo Backend - End to End Booking Lifecycle, Admin Rider Assignment, Operations (Start/Complete/Reschedule), and Rental Pickup/Return Flow.\n\nFlow covered:\n1. User Create Booking (`POST /api/bookings`)\n2. User Get Bookings & Agreement (`GET /api/bookings/user/:userId`, `/api/bookings/:id/agreement`)\n3. Admin Booking Management (`GET /api/admin/bookings`, `statistics`, `analytics/revenue`)\n4. Admin Assign Rider to Booking (`PATCH /api/admin/bookings/:id/assign-rider`)\n5. Admin Operations (`manual-start`, `manual-arrival`, `manual-complete`, `reschedule`, `cancel`, `refund`)\n6. Admin Rental Operations (`pickup`, `return`, `extend`, `inspection`)",
+		"schema": "https://getpostman.com/schemas/v1.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. User Booking Creation & Details",
+			"item": [
+				{
+					"name": "Create New Booking (User)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.success && jsonData.data && jsonData.data.booking_id) {",
+									"    pm.environment.set(\"booking_id\", jsonData.data.booking_id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{user_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"vehicle_id\": 1,\n  \"start_date\": \"2026-08-15\",\n  \"end_date\": \"2026-08-20\",\n  \"reference_id\": \"REF-BK-20260815-01\",\n  \"security_deposit\": 2000.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/bookings",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"bookings"
+							]
+						},
+						"description": "User creates a new vehicle booking request."
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Bookings",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{user_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/bookings/user/{{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"bookings",
+								"user",
+								"{{user_id}}"
+							]
+						},
+						"description": "Fetch all booking history for the logged-in user."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Booking Agreement PDF / Terms",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{user_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/bookings/{{booking_id}}/agreement",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"bookings",
+								"{{booking_id}}",
+								"agreement"
+							]
+						},
+						"description": "Fetch rental agreement terms and contract link."
+					},
+					"response": []
+				},
+				{
+					"name": "Cancel Booking (User)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{user_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reason\": \"Change of travel plans\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/bookings/{{booking_id}}/cancel",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"bookings",
+								"{{booking_id}}",
+								"cancel"
+							]
+						},
+						"description": "Cancel booking from user side."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Admin Booking Management & Analytics",
+			"item": [
+				{
+					"name": "Get All Bookings (Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/bookings?page=1&limit=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"bookings"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Get all system bookings with filters."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Booking Statistics",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/bookings/statistics",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"bookings",
+								"statistics"
+							]
+						},
+						"description": "Get summary count of pending, completed, active, and cancelled bookings."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Revenue Analytics",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/bookings/analytics/revenue?startDate=2026-08-01&endDate=2026-08-31",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"bookings",
+								"analytics",
+								"revenue"
+							],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2026-08-01"
+								},
+								{
+									"key": "endDate",
+									"value": "2026-08-31"
+								}
+							]
+						},
+						"description": "Get booking revenue report by date range."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Booking Timeline",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/bookings/{{booking_id}}/timeline",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"bookings",
+								"{{booking_id}}",
+								"timeline"
+							]
+						},
+						"description": "Get chronological history log of booking state transitions."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Admin Booking Operations & Rider Assignment",
+			"item": [
+				{
+					"name": "Assign Rider To Booking",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"rider_id\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/bookings/{{booking_id}}/assign-rider",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"bookings",
+								"{{booking_id}}",
+								"assign-rider"
+							]
+						},
+						"description": "Admin assigns a designated rider to deliver or manage the booking."
+					},
+					"response": []
+				},
+				{
+					"name": "Manual Start Booking",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/bookings/{{booking_id}}/manual-start",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"bookings",
+								"{{booking_id}}",
+								"manual-start"
+							]
+						},
+						"description": "Admin manually starts the booking trip."
+					},
+					"response": []
+				},
+				{
+					"name": "Manual Complete Booking",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"final_odometer_reading\": 12450,\n  \"remarks\": \"Vehicle returned safely, no damages.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/bookings/{{booking_id}}/manual-complete",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"bookings",
+								"{{booking_id}}",
+								"manual-complete"
+							]
+						},
+						"description": "Admin completes the booking manually."
+					},
+					"response": []
+				},
+				{
+					"name": "Refund Booking Amount",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": 500.00,\n  \"reason\": \"Refund for delay in vehicle delivery\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/bookings/{{booking_id}}/refund",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"bookings",
+								"{{booking_id}}",
+								"refund"
+							]
+						},
+						"description": "Process refund for booking."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. Admin Rental Operations Lifecycle",
+			"item": [
+				{
+					"name": "Generate Pickup OTP",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/rentals/1/otp",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"rentals",
+								"1",
+								"otp"
+							]
+						},
+						"description": "Generate pickup verification OTP for rental vehicle handoff."
+					},
+					"response": []
+				},
+				{
+					"name": "Vehicle Pickup Handover",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"otp\": \"4589\",\n  \"initial_odometer\": 10200,\n  \"initial_battery\": 100\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/rentals/1/pickup",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"rentals",
+								"1",
+								"pickup"
+							]
+						},
+						"description": "Hand over rental vehicle to customer upon OTP verification."
+					},
+					"response": []
+				},
+				{
+					"name": "Vehicle Return Handover",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"final_odometer\": 10550,\n  \"final_battery\": 65,\n  \"extra_charges\": 0.00,\n  \"remarks\": \"Returned in good condition\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/rentals/1/return",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"rentals",
+								"1",
+								"return"
+							]
+						},
+						"description": "Process return handover of rental vehicle."
+					},
+					"response": []
+				},
+				{
+					"name": "Extend Rental Duration",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"additional_days\": 3,\n  \"additional_amount\": 1500.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/rentals/1/extend",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"rentals",
+								"1",
+								"extend"
+							]
+						},
+						"description": "Extend active rental subscription period."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		}
+	]
+}

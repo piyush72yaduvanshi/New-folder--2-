@@ -1,0 +1,565 @@
+{
+	"info": {
+		"_postman_id": "c3d4e5f6-a7b8-9012-cdef-345678901234",
+		"name": "Pravzo Rider Application & Branch Assignment Flow",
+		"description": "Postman Collection for Pravzo Backend - Rider Lifecycle (User Application -> Admin Approval -> Branch Assignment -> Vehicle Assignment -> Status Update).\n\nFlow covered:\n1. User Rider Application (`/api/riders/apply`, `/api/riders/:id/application-status`, `/api/riders/verify-code`)\n2. Admin Branch Management (`/api/super-admin/branches`)\n3. Admin Rider Approval & KYC Verification (`/api/admin/riders/:id/verify-kyc`)\n4. Admin Assign Branch & Transfer Branch (`/api/admin/riders/:id/assign-branch`)\n5. Admin Assign Vehicle & Manage Rider Status (`/api/admin/riders/:id/assign-vehicle`, `/api/admin/riders/:id/status`)",
+		"schema": "https://getpostman.com/schemas/v1.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. User - Rider Application Flow",
+			"item": [
+				{
+					"name": "Submit Rider Application",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{user_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"father_name\": \"Ramesh Kumar\",\n  \"emergency_contact\": \"9876543211\",\n  \"driving_license_number\": \"DL1420110012345\",\n  \"aadhaar_number\": \"123456789012\",\n  \"pan_number\": \"ABCDE1234F\",\n  \"city\": \"Delhi\",\n  \"address\": \"H.No 12, Connaught Place, New Delhi\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/riders/apply",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"riders",
+								"apply"
+							]
+						},
+						"description": "User submits application to become a rider."
+					},
+					"response": []
+				},
+				{
+					"name": "Check Application Status",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{user_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/riders/{{user_id}}/application-status",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"riders",
+								"{{user_id}}",
+								"application-status"
+							]
+						},
+						"description": "Rider checks status of their application (PENDING, APPROVED, REJECTED)."
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Rider Code",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{user_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"rider_code\": \"RIDER-1001\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/riders/verify-code",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"riders",
+								"verify-code"
+							]
+						},
+						"description": "Verifies joining code and upgrades user role to RIDER."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Admin - Branch Management Flow",
+			"item": [
+				{
+					"name": "Create New Branch",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.success && jsonData.data && jsonData.data.branch_id) {",
+									"    pm.environment.set(\"branch_id\", jsonData.data.branch_id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"branch_name\": \"Connaught Place Branch\",\n  \"branch_code\": \"DEL-CP-01\",\n  \"admin_id\": 1,\n  \"branch_type\": \"MAIN\",\n  \"city\": \"Delhi\",\n  \"state\": \"Delhi\",\n  \"pin_code\": \"110001\",\n  \"email\": \"cp.branch@pravzo.com\",\n  \"phone_number\": \"9811122233\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/super-admin/branches",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"super-admin",
+								"branches"
+							]
+						},
+						"description": "Super Admin creates a new branch and saves branch_id."
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Branches",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/super-admin/branches?page=1&limit=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"super-admin",
+								"branches"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Fetch list of all active branches."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Admin - Rider Approval & Verification",
+			"item": [
+				{
+					"name": "Get All Riders List",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/riders?page=1&limit=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"riders"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Fetch list of riders for admin."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Rider Statistics",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/riders/statistics",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"riders",
+								"statistics"
+							]
+						},
+						"description": "Get summary count of riders (Active, Pending, Suspended, etc)."
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Rider KYC",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"kyc_status\": \"VERIFIED\",\n  \"remarks\": \"All rider documents verified and approved.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/riders/{{rider_id}}/verify-kyc",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"riders",
+								"{{rider_id}}",
+								"verify-kyc"
+							]
+						},
+						"description": "Admin approves and verifies rider KYC documents."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Rider Status",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"ACTIVE\",\n  \"remarks\": \"Rider activated for duty.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/riders/{{rider_id}}/status",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"riders",
+								"{{rider_id}}",
+								"status"
+							]
+						},
+						"description": "Update rider account status (ACTIVE, INACTIVE, BLOCKED)."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. Admin - Rider Branch & Vehicle Assignment",
+			"item": [
+				{
+					"name": "Assign Branch to Rider",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"branchId\": 1,\n  \"assignmentType\": \"PRIMARY\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/riders/{{rider_id}}/assign-branch",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"riders",
+								"{{rider_id}}",
+								"assign-branch"
+							]
+						},
+						"description": "Assign branch to a rider."
+					},
+					"response": []
+				},
+				{
+					"name": "Transfer Rider Branch",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"newBranchId\": 2,\n  \"reason\": \"Rider relocation to West Delhi\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/riders/{{rider_id}}/transfer-branch",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"riders",
+								"{{rider_id}}",
+								"transfer-branch"
+							]
+						},
+						"description": "Transfer rider from one branch to another."
+					},
+					"response": []
+				},
+				{
+					"name": "Assign Vehicle to Rider",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"vehicleId\": 1,\n  \"notes\": \"Assigned EV Scooter #101\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/riders/{{rider_id}}/assign-vehicle",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"riders",
+								"{{rider_id}}",
+								"assign-vehicle"
+							]
+						},
+						"description": "Assign an EV vehicle to rider."
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Assigned Vehicle",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reason\": \"Vehicle submitted for routine maintenance\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/riders/{{rider_id}}/remove-vehicle",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"riders",
+								"{{rider_id}}",
+								"remove-vehicle"
+							]
+						},
+						"description": "Unassign vehicle from rider."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		}
+	]
+}

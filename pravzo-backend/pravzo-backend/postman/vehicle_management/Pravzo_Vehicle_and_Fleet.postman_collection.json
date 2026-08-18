@@ -1,0 +1,656 @@
+{
+	"info": {
+		"_postman_id": "d4e5f6a7-b890-1234-def5-678901234567",
+		"name": "Pravzo Vehicle & Fleet Management Flow",
+		"description": "Postman Collection for Pravzo Backend - Vehicle Catalog, Fleet Operations, Branch Assignment & Maintenance Lifecycle.\n\nFlow covered:\n1. Public / User Vehicle APIs (`/api/vehicles`)\n2. Admin Vehicle Management (`/api/admin/vehicles` - Add, Update, Status, Documents)\n3. Branch & Rider Vehicle Assignment (`/api/admin/vehicles/:id/assign-branch`, `/api/admin/vehicles/:id/assign-rider`)\n4. Vehicle Maintenance Lifecycle (`/api/admin/vehicles/:id/start-maintenance`, `complete-maintenance`)\n5. Enterprise Fleet Tracking & Operations (`/api/admin/fleet/dashboard`, `live-locations`, `availability`, `bulk-assign`)",
+		"schema": "https://getpostman.com/schemas/v1.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Public / User Vehicle APIs",
+			"item": [
+				{
+					"name": "Get All Available Vehicles",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/vehicles",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"vehicles"
+							]
+						},
+						"description": "Get list of all public/active vehicles available for booking or rental."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Vehicle Details By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/vehicles/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"vehicles",
+								"1"
+							]
+						},
+						"description": "Get detailed specs of a single vehicle by ID."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Admin Vehicle Management (CRUD & Docs)",
+			"item": [
+				{
+					"name": "Get Vehicle Statistics",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/vehicles/statistics",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"vehicles",
+								"statistics"
+							]
+						},
+						"description": "Get summary count of vehicles (Active, Maintenance, Assigned, Inactive)."
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Admin Vehicles",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/vehicles?page=1&limit=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"vehicles"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Get paginated list of vehicles for admin."
+					},
+					"response": []
+				},
+				{
+					"name": "Create New Vehicle",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.success && jsonData.data && jsonData.data.vehicle_id) {",
+									"    pm.environment.set(\"vehicle_id\", jsonData.data.vehicle_id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"registration_number\": \"DL01EV2026\",\n  \"vehicle_number\": \"EV-SCOOTER-101\",\n  \"model\": \"Ather 450X\",\n  \"brand\": \"Ather Energy\",\n  \"vehicle_type\": \"SCOOTER\",\n  \"battery_capacity\": \"3.7 kWh\",\n  \"max_range_km\": 110,\n  \"current_battery_level\": 100,\n  \"status\": \"AVAILABLE\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/vehicles",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"vehicles"
+							]
+						},
+						"description": "Create a new EV vehicle and save vehicle_id."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Vehicle Info",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"current_battery_level\": 95,\n  \"status\": \"AVAILABLE\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/vehicles/{{vehicle_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"vehicles",
+								"{{vehicle_id}}"
+							]
+						},
+						"description": "Update vehicle specifications or battery status."
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Vehicle Document",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"document_type\": \"RC\",\n  \"document_number\": \"RC-DL01EV2026-99\",\n  \"document_url\": \"https://pravzo.com/uploads/rc-101.pdf\",\n  \"expiry_date\": \"2030-12-31\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/vehicles/{{vehicle_id}}/documents",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"vehicles",
+								"{{vehicle_id}}",
+								"documents"
+							]
+						},
+						"description": "Upload RC, Insurance, or Pollution document for vehicle."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Vehicle Documents",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/vehicles/{{vehicle_id}}/documents",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"vehicles",
+								"{{vehicle_id}}",
+								"documents"
+							]
+						},
+						"description": "Fetch all uploaded documents for vehicle."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Vehicle Assignment (Branch & Rider)",
+			"item": [
+				{
+					"name": "Assign Vehicle To Branch",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"branch_id\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/vehicles/{{vehicle_id}}/assign-branch",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"vehicles",
+								"{{vehicle_id}}",
+								"assign-branch"
+							]
+						},
+						"description": "Assign vehicle to a specific branch hub."
+					},
+					"response": []
+				},
+				{
+					"name": "Assign Vehicle To Rider",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"rider_id\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/vehicles/{{vehicle_id}}/assign-rider",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"vehicles",
+								"{{vehicle_id}}",
+								"assign-rider"
+							]
+						},
+						"description": "Assign vehicle to a specific rider."
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Rider From Vehicle",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reason\": \"Shift ended\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/vehicles/{{vehicle_id}}/remove-rider",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"vehicles",
+								"{{vehicle_id}}",
+								"remove-rider"
+							]
+						},
+						"description": "Unassign rider from vehicle."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. Maintenance & Operations Lifecycle",
+			"item": [
+				{
+					"name": "Start Vehicle Maintenance",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"maintenance_type\": \"ROUTINE\",\n  \"description\": \"Battery health check and brake pad replacement\",\n  \"estimated_cost\": 1500.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/vehicles/{{vehicle_id}}/start-maintenance",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"vehicles",
+								"{{vehicle_id}}",
+								"start-maintenance"
+							]
+						},
+						"description": "Put vehicle in maintenance mode."
+					},
+					"response": []
+				},
+				{
+					"name": "Complete Vehicle Maintenance",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"actual_cost\": 1400.00,\n  \"remarks\": \"Replaced front brake pads and recharged battery to 100%\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/vehicles/{{vehicle_id}}/complete-maintenance",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"vehicles",
+								"{{vehicle_id}}",
+								"complete-maintenance"
+							]
+						},
+						"description": "Complete maintenance and return vehicle to available status."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Maintenance History",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/vehicles/{{vehicle_id}}/maintenance-history",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"vehicles",
+								"{{vehicle_id}}",
+								"maintenance-history"
+							]
+						},
+						"description": "Fetch complete maintenance records of a vehicle."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "5. Enterprise Fleet Tracking",
+			"item": [
+				{
+					"name": "Get Fleet Dashboard Overview",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/fleet/dashboard",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"fleet",
+								"dashboard"
+							]
+						},
+						"description": "Get real-time fleet operations dashboard."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Fleet Live Locations",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/fleet/live-locations",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"fleet",
+								"live-locations"
+							]
+						},
+						"description": "Get GPS live coordinates of all active fleet vehicles."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Fleet Availability Stats",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/fleet/availability",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"fleet",
+								"availability"
+							]
+						},
+						"description": "Get fleet availability metrics by branch and vehicle type."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		}
+	]
+}

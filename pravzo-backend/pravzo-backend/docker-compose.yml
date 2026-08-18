@@ -1,0 +1,116 @@
+version: '3.9'
+
+# ── Pravzo Local Dev Infrastructure ──────────────────────────────────────────
+# Sirf services hain yahan — backend locally run hoga (npm run dev)
+# Start: docker compose up -d
+# Stop:  docker compose down
+# Reset (data bhi delete): docker compose down -v
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── MySQL 8 ────────────────────────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: pravzo_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: pravzo_db
+      MYSQL_USER: pravzo_user
+      MYSQL_PASSWORD: pravzo_pass
+    ports:
+      - "3307:3306"   # 3306 local pe already MySQL chal raha hai, isliye 3307
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - pravzo_net
+
+  # ── Redis ──────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: pravzo_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --save 60 1 --loglevel warning
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - pravzo_net
+
+  # ── MinIO (S3-compatible object storage) ──────────────────────────────────
+  minio:
+    image: minio/minio:latest
+    container_name: pravzo_minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    ports:
+      - "9002:9000"   # API / SDK endpoint
+      - "9003:9001"   # Web Console → http://localhost:9001
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - pravzo_net
+
+  # ── Mailpit (local SMTP + web inbox) ──────────────────────────────────────
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: pravzo_mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"   # SMTP (nodemailer yahan bhejega)
+      - "8025:8025"   # Web UI  → http://localhost:8025
+    networks:
+      - pravzo_net
+
+  # ── phpMyAdmin (MySQL browser GUI) ────────────────────────────────────────
+  # Browser mein open karo: http://localhost:8080
+  # Server: mysql  |  Username: pravzo_user  |  Password: pravzo_pass
+  # Ya root access ke liye: root / rootpassword
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: pravzo_phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: rootpassword
+      UPLOAD_LIMIT: 64M
+    ports:
+      - "8080:80"     # Web UI → http://localhost:8080
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - pravzo_net
+
+# ── Volumes ────────────────────────────────────────────────────────────────
+volumes:
+  mysql_data:
+  redis_data:
+  minio_data:
+
+# ── Network ────────────────────────────────────────────────────────────────
+networks:
+  pravzo_net:
+    driver: bridge
